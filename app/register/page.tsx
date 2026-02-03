@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { register } from "@/app/actions/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,16 +14,30 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const formData = new FormData(e.currentTarget);
-      const result = await register(formData);
-      if (result?.error) {
-        setError(result.error);
+      const form = e.currentTarget;
+      const email = (form.querySelector<HTMLInputElement>('[name="email"]')?.value ?? "").trim();
+      const password = form.querySelector<HTMLInputElement>('[name="password"]')?.value ?? "";
+      const name = (form.querySelector<HTMLInputElement>('[name="name"]')?.value ?? "").trim() || null;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      const data = await res.json().catch(() => ({}));
+
+      if (data.ok && data.redirect) {
+        router.push(data.redirect);
         return;
       }
-      if (result?.redirect) {
-        router.push(result.redirect);
-        return;
-      }
+      setError(data.error ?? "登録に失敗しました。しばらくしてからお試しください。");
+    } catch (err) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setError(isAbort ? "通信がタイムアウトしました。しばらくしてからお試しください。" : "通信に失敗しました。しばらくしてからお試しください。");
     } finally {
       setLoading(false);
     }

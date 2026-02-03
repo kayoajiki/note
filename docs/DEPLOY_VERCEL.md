@@ -123,9 +123,10 @@ Vercel のプロジェクト設定 → **Environment Variables** で、次の変
 
 | 変数名 | 値 | 説明 |
 |--------|-----|------|
-| `DATABASE_URL` | `postgresql://...` | Postgres の接続文字列（本番用） |
+| `DATABASE_URL` | `postgresql://...` | Postgres の接続文字列（本番用）。Supabase は **Transaction（ポート 6543）** の URL を使う。 |
 | `NEXTAUTH_SECRET` | 32文字以上のランダム文字列 | 例: `openssl rand -base64 32` で生成 |
 | `NEXTAUTH_URL` | `https://あなたのドメイン.vercel.app` | デプロイ後の URL（後から変更可） |
+| `BCRYPT_ROUNDS` | `8` | **推奨。** 本番で新規登録を 10 秒以内に完了させるため。未設定時は 10（重い）。 |
 | `AI_PROVIDER` | `openai` / `gemini` / `anthropic` | 使用する AI |
 | `OPENAI_API_KEY` または `GEMINI_API_KEY` など | 各 API キー | 使用するプロバイダーに応じて |
 
@@ -159,6 +160,7 @@ Vercel のプロジェクト設定 → **Environment Variables** で、次の変
 - **「Prisma Client が生成されていない」**: Build Command に `prisma generate` を入れる（`prisma generate && next build`）。
 - **ログイン後に 404**: `NEXTAUTH_URL` がデプロイ先の URL と一致しているか確認する（`https://` から始まり、末尾に `/` をつけない）。
 - **API ルートで DB エラー**: 本番の `DATABASE_URL` が Postgres になっており、マイグレーション済みか確認する。
+- **新規登録が「登録中…」のまま進まない**: Vercel の関数は約 10 秒でタイムアウトします。次を確認してください。(1) **DATABASE_URL** に Supabase の **Transaction（ポート 6543）** の URL を使っているか。(2) 環境変数 **BCRYPT_ROUNDS=8** を追加して Redeploy する（パスワードハッシュを軽くし、10 秒以内に収める）。
 
 ---
 
