@@ -104,10 +104,28 @@ openssl rand -base64 32
 
 Supabase の本番 DB に、まだ Prisma のテーブル（User, Persona, Note）が無い場合は、**ローカル**で 1 回だけマイグレーションを流す。
 
+**重要**: `prisma migrate deploy` は **直接接続（ポート 5432）** で行う。Transaction プーラー（6543）だと接続が止まることがある。
+
+### 4-1. 直接接続の URL を用意する
+
+1. **Supabase** → Project Settings → **Database** → **Connection string**
+2. **「Direct connection」** または **「URI」でポート 5432** の接続文字列をコピーする。  
+   ホストは **`db.zigivdfhrmkufdpvvpci.supabase.co`** のような形式（`pooler.supabase.com` ではない）。
+3. **`[YOUR-PASSWORD]`** を実際のパスワードに置き換え、末尾に **`?sslmode=require`** を付ける。  
+   例: `postgresql://postgres.zigivdfhrmkufdpvvpci:パスワード@db.zigivdfhrmkufdpvvpci.supabase.co:5432/postgres?sslmode=require`
+
+### 4-2. マイグレーションを実行する
+
+1. **.env** の **DATABASE_URL** を、上で作った**直接接続の URL（5432）** に書き換える。
+2. ターミナルで実行:
+
 ```bash
 cd /Users/user/note/note
-DATABASE_URL="ここにStep0-2の接続文字列を貼る" npx prisma migrate deploy
+npx prisma migrate deploy
 ```
+
+3. 成功したら（「X migrations applied」や「No pending migrations」）、**.env** の DATABASE_URL を**元に戻す**。  
+   本番アプリ・Vercel では **Transaction プーラー（6543）** の URL のまま使う。
 
 （既にテーブルがある場合は「No pending migrations」などと出て何も変わらない。）
 
@@ -117,10 +135,14 @@ DATABASE_URL="ここにStep0-2の接続文字列を貼る" npx prisma migrate de
 
 本番で誰もユーザーがいない場合、シードで 1 人作る。
 
+**Step 4 と同様、.env の DATABASE_URL を本番用に書き換えた状態で** 次を実行する（書き換え済みならそのまま実行でよい）:
+
 ```bash
 cd /Users/user/note/note
-DATABASE_URL="ここにStep0-2の接続文字列を貼る" pnpm run db:seed
+pnpm run db:seed
 ```
+
+終わったら **.env** の DATABASE_URL を元に戻す。
 
 - ログイン用: **admin@example.com** / **changeme**
 
