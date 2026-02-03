@@ -11,6 +11,7 @@ export async function GET() {
   checks.DATABASE_URL = process.env.DATABASE_URL ? "設定済み" : "未設定";
   checks.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET ? "設定済み" : "未設定";
   checks.NEXTAUTH_URL = process.env.NEXTAUTH_URL ?? "未設定";
+  checks.BCRYPT_ROUNDS = process.env.BCRYPT_ROUNDS ?? "未設定（デフォルト10）";
 
   try {
     await prisma.$queryRaw`SELECT 1`;
