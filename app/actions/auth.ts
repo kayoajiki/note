@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 
 export async function register(formData: FormData): Promise<{ error?: string; redirect?: string }> {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
@@ -15,17 +15,23 @@ export async function register(formData: FormData): Promise<{ error?: string; re
     return { error: "パスワードは6文字以上にしてください" };
   }
 
-  const existing = await prisma.user.findUnique({
-    where: { email },
-  });
-  if (existing) {
-    return { error: "このメールアドレスは既に登録されています" };
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (existing) {
+      return { error: "このメールアドレスは既に登録されています" };
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await prisma.user.create({
+      data: { email, name, passwordHash },
+    });
+
+    return { redirect: "/login?registered=1" };
+  } catch (e) {
+    console.error("Register error:", e);
+    const message = e instanceof Error ? e.message : "登録に失敗しました。しばらくしてからお試しください。";
+    return { error: message };
   }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.user.create({
-    data: { email, name, passwordHash },
-  });
-
-  return { redirect: "/login?registered=1" };
 }

@@ -14,18 +14,20 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const result = await register(formData);
-    if (result?.error) {
-      setError(result.error);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await register(formData);
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+      if (result?.redirect) {
+        router.push(result.redirect);
+        return;
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-    if (result?.redirect) {
-      router.push(result.redirect);
-      return;
-    }
-    setLoading(false);
   }
 
   return (
