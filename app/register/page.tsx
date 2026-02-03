@@ -28,16 +28,19 @@ export default function RegisterPage() {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-      const data = await res.json().catch(() => ({}));
+      const rawText = await res.text();
+      const data = rawText ? (() => { try { return JSON.parse(rawText); } catch { return {}; } })() : {};
 
-      if (data.ok && data.redirect) {
+      if (res.ok && data.ok && data.redirect) {
         router.push(data.redirect);
         return;
       }
-      setError(data.error ?? "登録に失敗しました。しばらくしてからお試しください。");
+      const serverError = data.error ?? (res.ok ? "登録に失敗しました。" : "");
+      const statusInfo = res.status !== 200 ? ` [HTTP ${res.status}]` : "";
+      setError(serverError ? `${serverError}${statusInfo}` : `エラーが発生しました。${statusInfo} しばらくしてからお試しください。${rawText ? ` (${rawText.slice(0, 80)}…)` : ""}`);
     } catch (err) {
       const isAbort = err instanceof Error && err.name === "AbortError";
-      setError(isAbort ? "通信がタイムアウトしました。しばらくしてからお試しください。" : "通信に失敗しました。しばらくしてからお試しください。");
+      setError(isAbort ? "通信がタイムアウトしました（20秒）。しばらくしてからお試しください。" : "通信に失敗しました。ネットワークまたは本番の設定を確認してください。");
     } finally {
       setLoading(false);
     }

@@ -72,9 +72,10 @@ Connection string
    - 例: パスワードが `mypass123` なら、  
      `postgresql://postgres.xxx:[YOUR-PASSWORD]@...`  
      → `postgresql://postgres.xxx:mypass123@...`
-3. 末尾に **`?sslmode=require`** が付いているか確認する。  
-   - 付いていなければ、URL の**最後**に `?sslmode=require` を付ける。  
-   - 例: `.../postgres` → `.../postgres?sslmode=require`
+3. 末尾のクエリを付ける。  
+   - **`?sslmode=require`** が付いていなければ付ける。  
+   - **Prisma で Transaction（6543）を使う場合**は、さらに **`&pgbouncer=true`** を付ける（接続モードの互換のため）。  
+   - 例: `.../postgres` → `.../postgres?sslmode=require&pgbouncer=true`
 4. この**完成した 1 本の URL** を、Vercel の環境変数 **DATABASE_URL** の **Value** にそのまま貼り付ける。
 
 ---
