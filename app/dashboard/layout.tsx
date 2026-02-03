@@ -14,7 +14,10 @@ export default async function DashboardLayout({
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
-  const personas = await prisma.persona.findMany({ orderBy: { createdAt: "asc" } });
+  const personas = await prisma.persona.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "asc" },
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,6 +31,9 @@ export default async function DashboardLayout({
           </Link>
           <Link href="/dashboard/write" className="text-sm text-neutral-600 hover:text-neutral-900">
             書く
+          </Link>
+          <Link href="/dashboard/topics" className="text-sm text-neutral-600 hover:text-neutral-900">
+            ネタ発掘
           </Link>
           <Link href="/dashboard/notes" className="text-sm text-neutral-600 hover:text-neutral-900">
             記事一覧

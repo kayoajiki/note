@@ -1,25 +1,25 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "@/lib/prisma";
+import * as bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "ユーザー名", type: "text" },
+        email: { label: "メールアドレス", type: "email" },
         password: { label: "パスワード", type: "password" },
       },
       async authorize(credentials) {
-        const username = process.env.MEMBER_USERNAME;
-        const password = process.env.MEMBER_PASSWORD;
-        if (!username || !password) return null;
-        if (
-          credentials?.username === username &&
-          credentials?.password === password
-        ) {
-          return { id: "member", name: "メンバー", email: null };
-        }
-        return null;
+        if (!credentials?.email || !credentials?.password) return null;
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.trim().toLowerCase() },
+        });
+        if (!user) return null;
+        const ok = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!ok) return null;
+        return { id: user.id, name: user.name ?? null, email: user.email };
       },
     }),
   ],

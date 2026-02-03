@@ -17,7 +17,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const persona = await prisma.persona.findUnique({ where: { id: personaId } });
+    const persona = await prisma.persona.findFirst({
+      where: { id: personaId, userId: session.user.id },
+    });
     if (!persona) {
       return NextResponse.json({ error: "ペルソナが見つかりません" }, { status: 404 });
     }

@@ -1,4 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -7,12 +9,16 @@ export default async function NoteDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/login");
+
   const { id } = await params;
   const note = await prisma.note.findUnique({
     where: { id },
     include: { persona: true },
   });
   if (!note) notFound();
+  if (note.persona.userId !== session.user.id) notFound();
 
   return (
     <div className="space-y-6">

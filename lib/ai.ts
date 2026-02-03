@@ -119,6 +119,57 @@ ${seedWords}`;
   return parseTitleAndBody(raw);
 }
 
+const suggestTopicsSystem =
+  "あなたはブログネタを提案するアシスタントです。与えられた志向・興味と、最近のトレンドを意識して、ブログにしやすいネタを10個提案します。出力は番号付きで1行1件のみにしてください。説明や前置きは不要です。";
+
+function parseTopicsList(text: string): string[] {
+  const lines = text
+    .split(/\n/)
+    .map((line) => line.replace(/^\s*\d+[\.．)\]\s]*/, "").replace(/^[・\-]\s*/, "").trim())
+    .filter(Boolean);
+  return lines.slice(0, 10);
+}
+
+export async function suggestBlogTopics(
+  interests: string,
+  trendsHint?: string
+): Promise<string[]> {
+  const user = trendsHint
+    ? `志向・興味: ${interests}\n\n参考トレンド: ${trendsHint}\n\n上記に基づきブログネタを10個、番号付きで1行1件ずつ出力してください。`
+    : `志向・興味: ${interests}\n\n最近のトレンドを意識しつつ、上記に基づきブログネタを10個、番号付きで1行1件ずつ出力してください。`;
+
+  let raw = "";
+  if (provider === "gemini") {
+    const model = await getGeminiModel(suggestTopicsSystem);
+    const result = await model.generateContent(user);
+    const response = result.response;
+    raw = response.text()?.trim() ?? "";
+  } else if (provider === "anthropic") {
+    const { Anthropic } = await import("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1024,
+      system: suggestTopicsSystem,
+      messages: [{ role: "user", content: user }],
+    });
+    const text = msg.content.find((c) => c.type === "text");
+    raw = text && "text" in text ? text.text : "";
+  } else {
+    const openai = await getOpenAIClient();
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: suggestTopicsSystem },
+        { role: "user", content: user },
+      ],
+      max_tokens: 1024,
+    });
+    raw = completion.choices[0]?.message?.content?.trim() ?? "";
+  }
+  return parseTopicsList(raw);
+}
+
 const refineSystem =
   "あなたはブログ記事の編集アシスタントです。ユーザーから「現在のタイトルと本文」と「修正指示」が渡されます。指示に従ってのみ修正し、指示にない部分は変えずに返してください。出力は次の形式だけにしてください（説明や前置きは不要）: 1行目がタイトル、2行目は空行、3行目以降が本文。";
 

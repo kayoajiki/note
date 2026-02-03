@@ -1,14 +1,22 @@
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { WriteForm } from "@/components/WriteForm";
 
 export default async function WritePage({
   searchParams,
 }: {
-  searchParams: Promise<{ persona?: string }>;
+  searchParams: Promise<{ persona?: string; seed?: string }>;
 }) {
-  const { persona: personaId } = await searchParams;
-  const personas = await prisma.persona.findMany({ orderBy: { createdAt: "asc" } });
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/login");
+
+  const { persona: personaId, seed: initialSeed } = await searchParams;
+  const personas = await prisma.persona.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "asc" },
+  });
 
   if (personas.length === 0) {
     return (
@@ -31,7 +39,7 @@ export default async function WritePage({
           <span className="ml-2">（タブで切り替え）</span>
         )}
       </p>
-      <WriteForm persona={selectedPersona} personas={personas} />
+      <WriteForm persona={selectedPersona} personas={personas} initialSeed={initialSeed} />
     </div>
   );
 }

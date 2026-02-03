@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -6,11 +9,20 @@ export default async function NotesPage({
 }: {
   searchParams: Promise<{ persona?: string }>;
 }) {
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/login");
+
   const { persona: personaId } = await searchParams;
-  const personas = await prisma.persona.findMany({ orderBy: { createdAt: "asc" } });
+  const personas = await prisma.persona.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "asc" },
+  });
 
   const notes = await prisma.note.findMany({
-    where: personaId ? { personaId } : undefined,
+    where: {
+      ...(personaId ? { personaId } : {}),
+      persona: { userId: session.user.id },
+    },
     orderBy: { createdAt: "desc" },
     include: { persona: true },
   });

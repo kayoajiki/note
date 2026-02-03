@@ -7,8 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  personas     Persona[]
+}
+
 model Persona {
   id           String   @id @default(cuid())
+  userId       String?  // 既存データ用に一旦 optional。シードで紐付けた後は必須扱い
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String
   systemPrompt String   @default("")
   rules        String   @default("")

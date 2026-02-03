@@ -7,11 +7,11 @@ import { createNote } from "@/app/actions/note";
 
 type HistoryItem = { title: string; body: string };
 
-type Props = { persona: Persona; personas: Persona[] };
+type Props = { persona: Persona; personas: Persona[]; initialSeed?: string };
 
-export function WriteForm({ persona, personas }: Props) {
+export function WriteForm({ persona, personas, initialSeed }: Props) {
   const router = useRouter();
-  const [seedWords, setSeedWords] = useState("");
+  const [seedWords, setSeedWords] = useState(initialSeed ?? "");
   const [body, setBody] = useState("");
   const [title, setTitle] = useState("");
   const [generating, setGenerating] = useState(false);
