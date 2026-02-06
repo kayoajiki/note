@@ -38,6 +38,9 @@ export default async function DashboardLayout({
           <Link href="/dashboard/notes" className="text-sm text-neutral-600 hover:text-neutral-900">
             記事一覧
           </Link>
+          <Link href="/dashboard/settings" className="text-sm text-neutral-600 hover:text-neutral-900">
+            設定
+          </Link>
           <LogoutButton />
         </nav>
       </header>

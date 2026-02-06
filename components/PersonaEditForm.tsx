@@ -3,7 +3,7 @@
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Persona } from "@prisma/client";
-import { updatePersona } from "@/app/actions/persona";
+import { updatePersona, deletePersona } from "@/app/actions/persona";
 
 type Props = { persona: Persona };
 
@@ -18,6 +18,7 @@ export function PersonaEditForm({ persona }: Props) {
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
   const [fetchingNote, setFetchingNote] = useState(false);
   const [promptError, setPromptError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleGenerateFromPaste() {
     if (!pasteText.trim()) return;
@@ -116,6 +117,19 @@ export function PersonaEditForm({ persona }: Props) {
     });
   }
 
+  async function handleDelete() {
+    if (
+      !confirm(
+        "このペルソナを削除しますか？紐づく記事も削除され、元に戻せません。"
+      )
+    )
+      return;
+    setDeleting(true);
+    await deletePersona(persona.id);
+    router.push("/dashboard");
+    router.refresh();
+  }
+
   return (
     <form onSubmit={handleSave} className="space-y-6">
       <div>
@@ -195,13 +209,23 @@ export function PersonaEditForm({ persona }: Props) {
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-50"
-      >
-        {isPending ? "保存中…" : "保存"}
-      </button>
+      <div className="flex items-center gap-4">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-50"
+        >
+          {isPending ? "保存中…" : "保存"}
+        </button>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting || isPending}
+          className="px-6 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 disabled:opacity-50"
+        >
+          {deleting ? "削除中…" : "ペルソナを削除"}
+        </button>
+      </div>
     </form>
   );
 }
