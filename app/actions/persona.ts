@@ -10,6 +10,12 @@ export async function createPersona(formData: FormData) {
   if (!session?.user?.id) return { error: "ログインしてください" };
   const name = (formData.get("name") as string)?.trim();
   if (!name) return { error: "名前を入力してください" };
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+  if (!user) {
+    return { error: "ユーザーが見つかりません。一度ログアウトして再ログインしてください。" };
+  }
   await prisma.persona.create({
     data: { userId: session.user.id, name, systemPrompt: "", rules: "" },
   });

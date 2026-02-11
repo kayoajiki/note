@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { LogoutButton } from "@/components/LogoutButton";
 import { DashboardNav } from "@/components/DashboardNav";
+import { EditPersonaLink } from "@/components/EditPersonaLink";
 import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
@@ -32,6 +33,7 @@ export default async function DashboardLayout({
           <Link href="/dashboard/write" className="text-sm text-neutral-600 hover:text-neutral-900">
             書く
           </Link>
+          <EditPersonaLink personas={personas} />
           <Link href="/dashboard/topics" className="text-sm text-neutral-600 hover:text-neutral-900">
             ネタ発掘
           </Link>

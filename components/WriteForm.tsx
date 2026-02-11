@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Persona } from "@prisma/client";
 import { createNote } from "@/app/actions/note";
@@ -20,6 +20,13 @@ export function WriteForm({ persona, personas, initialSeed }: Props) {
   const [instruction, setInstruction] = useState("");
   const [refining, setRefining] = useState(false);
   const [expandedHistoryIndex, setExpandedHistoryIndex] = useState<number | null>(null);
+  const [systemPrompt, setSystemPrompt] = useState(persona.systemPrompt);
+  const [rules, setRules] = useState(persona.rules);
+
+  useEffect(() => {
+    setSystemPrompt(persona.systemPrompt);
+    setRules(persona.rules);
+  }, [persona.id, persona.systemPrompt, persona.rules]);
 
   async function handleGenerate() {
     if (!seedWords.trim()) return;
@@ -29,7 +36,12 @@ export function WriteForm({ persona, personas, initialSeed }: Props) {
       const res = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ personaId: persona.id, seedWords }),
+        body: JSON.stringify({
+          personaId: persona.id,
+          seedWords,
+          systemPromptOverride: systemPrompt,
+          rulesOverride: rules,
+        }),
       });
       const data = await res.json();
       if (data.title != null) setTitle(data.title);
@@ -99,21 +111,48 @@ export function WriteForm({ persona, personas, initialSeed }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          アイデア・単語
-        </label>
-        <textarea
-          value={seedWords}
-          onChange={(e) => setSeedWords(e.target.value)}
-          placeholder="記事にしたいキーワードやアイデアを入力"
-          className="w-full h-24 px-3 py-2 border border-neutral-300 rounded-lg"
-        />
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            アイデア・単語
+          </label>
+          <textarea
+            value={seedWords}
+            onChange={(e) => setSeedWords(e.target.value)}
+            placeholder="記事にしたいキーワードやアイデアを入力"
+            className="w-full h-24 px-3 py-2 border border-neutral-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            プロンプト（この画面で編集可能・生成に反映されます）
+          </label>
+          <textarea
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
+            placeholder="ペルソナのシステムプロンプト。編集画面で設定した内容が表示されます"
+            className="w-full h-24 px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+          />
+          <label className="block text-sm font-medium text-neutral-700 mt-2 mb-1">
+            ルール（任意）
+          </label>
+          <textarea
+            value={rules}
+            onChange={(e) => setRules(e.target.value)}
+            placeholder="例: 一人称で書く、専門用語を避ける"
+            className="w-full h-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+          />
+          <p className="mt-2 text-xs text-neutral-500">
+            編集画面で保存した内容は DB に残り、書く画面での変更は「そのときの生成だけ」に使われます。
+          </p>
+        </div>
+
         <button
           type="button"
           onClick={handleGenerate}
           disabled={generating || !seedWords.trim()}
-          className="mt-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-50"
+          className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 disabled:opacity-50"
         >
           {generating ? "生成中…" : "文章を生成"}
         </button>

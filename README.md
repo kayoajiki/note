@@ -13,7 +13,9 @@
 ## セットアップ
 
 1. 依存関係のインストール  
-   `npm install`
+   - **npm を使う場合**: `npm install` のあと `npm run dev` で起動できます。
+   - **pnpm を使う場合**: `pnpm install` のあと `pnpm dev` で起動できます。  
+   どちらか一方に揃えてください。いったん pnpm で入れている場合は、npm に切り替えるなら `node_modules` を削除してから `npm install` を実行してください。
 
 2. 環境変数  
    `.env.example` をコピーして `.env` を作成し、以下を設定する。

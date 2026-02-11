@@ -8,11 +8,18 @@ export function AddPersonaForm() {
   const [isPending, startTransition] = useTransition();
   const [name, setName] = useState("");
 
+  const [error, setError] = useState<string | null>(null);
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
+    setError(null);
     startTransition(async () => {
-      await createPersona(new FormData(e.target as HTMLFormElement));
+      const result = await createPersona(new FormData(e.target as HTMLFormElement));
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
       setName("");
     });
   }
@@ -35,6 +42,11 @@ export function AddPersonaForm() {
       >
         {isPending ? "追加中…" : "新規ペルソナを追加"}
       </button>
+      {error && (
+        <p className="text-red-600 text-sm self-center" role="alert">
+          {error}
+        </p>
+      )}
     </form>
   );
 }

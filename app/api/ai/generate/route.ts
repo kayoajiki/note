@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "未ログイン" }, { status: 401 });
   }
   try {
-    const { personaId, seedWords } = await req.json();
+    const { personaId, seedWords, systemPromptOverride, rulesOverride } = await req.json();
     if (!personaId || !seedWords || typeof seedWords !== "string") {
       return NextResponse.json(
         { error: "personaId と seedWords を送信してください" },
@@ -23,9 +23,17 @@ export async function POST(req: Request) {
     if (!persona) {
       return NextResponse.json({ error: "ペルソナが見つかりません" }, { status: 404 });
     }
+    const systemPrompt =
+      typeof systemPromptOverride === "string" && systemPromptOverride.trim() !== ""
+        ? systemPromptOverride.trim()
+        : persona.systemPrompt;
+    const rules =
+      typeof rulesOverride === "string"
+        ? rulesOverride
+        : persona.rules;
     const { title, body } = await generateBlogPost(
-      persona.systemPrompt,
-      persona.rules,
+      systemPrompt,
+      rules,
       seedWords
     );
     return NextResponse.json({ title, body });
