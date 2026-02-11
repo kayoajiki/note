@@ -156,6 +156,27 @@ Vercel のプロジェクト設定 → **Environment Variables** で、次の変
 
 ## 5. よくあるトラブル
 
+### 「Application error: a server-side exception has occurred」
+
+画面全体がこのメッセージになる場合、**Vercel のログで実際のエラー内容を確認**してください。
+
+1. Vercel ダッシュボード → 対象プロジェクト → **Logs**（または **Deployments** → 該当デプロイ → **Functions** / **Runtime Logs**）
+2. エラーが出た時刻のログを開き、`Error:` やスタックトレースを確認する。
+
+**よくある原因と対処:**
+
+| 原因 | 対処 |
+|------|------|
+| **NEXTAUTH_SECRET 未設定** | Environment Variables に `NEXTAUTH_SECRET` を追加（32文字以上のランダム文字列）。**Production** にチェックを入れる。 |
+| **NEXTAUTH_URL が違う** | 本番の URL を設定する。例: `https://note-beryl-six.vercel.app`（末尾に `/` なし）。**Production** にチェック。 |
+| **DATABASE_URL 未設定・誤り** | 本番用の Postgres 接続文字列を設定。Supabase の場合は **Transaction（ポート 6543）** の URL + `?sslmode=require&pgbouncer=true`。 |
+| **Supabase が Paused** | Supabase ダッシュボードで「Restore project」してから再度アクセス。 |
+| **マイグレーション未実行** | ローカルで `DATABASE_URL` を本番用に切り替え、`npx prisma migrate deploy` を実行してから再デプロイ。 |
+
+環境変数を変更したら **Redeploy**（Deployments → 最新の ⋮ → Redeploy）が必要です。
+
+---
+
 - **「DATABASE_URL が設定されていません」**: Vercel の Environment Variables に `DATABASE_URL` を追加し、値を Postgres の URL にしたか確認する。
 - **「Prisma Client が生成されていない」**: Build Command に `prisma generate` を入れる（`prisma generate && next build`）。
 - **ログイン後に 404**: `NEXTAUTH_URL` がデプロイ先の URL と一致しているか確認する（`https://` から始まり、末尾に `/` をつけない）。
