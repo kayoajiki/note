@@ -22,12 +22,16 @@ function LoginForm() {
       redirect: false,
       callbackUrl,
     });
-    setLoading(false);
     if (res?.error) {
+      setLoading(false);
       setError("メールアドレスまたはパスワードが違います。");
       return;
     }
-    if (res?.url) window.location.href = res.url;
+    if (res?.url) {
+      window.location.href = res.url;
+    } else {
+      setLoading(false);
+    }
   }
 
   return (

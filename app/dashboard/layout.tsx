@@ -13,7 +13,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
 
   const personas = await prisma.persona.findMany({
     where: { userId: session.user.id },
