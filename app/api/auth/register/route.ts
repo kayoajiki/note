@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { registerUser } from "@/lib/register";
+import { registerUser, type RegisterResult } from "@/lib/register";
 
 const SERVER_TIMEOUT_MS = 8_000;
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const name =
       typeof body.name === "string" && body.name.trim() ? body.name.trim() : null;
 
-    const timeoutPromise = new Promise<{ error: string }>((resolve) =>
+    const timeoutPromise = new Promise<RegisterResult>((resolve) =>
       setTimeout(
         () => resolve({ error: "処理がタイムアウトしました。しばらくしてからお試しください。" }),
         SERVER_TIMEOUT_MS
