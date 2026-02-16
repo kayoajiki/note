@@ -144,12 +144,38 @@ export function PersonaEditForm({ persona }: Props) {
       </div>
 
       <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50 space-y-3">
-        <h2 className="font-medium text-neutral-800">過去文章からプロンプトを生成</h2>
+        <h2 className="font-medium text-neutral-800">noteのURL または 文章からプロンプトを生成</h2>
         <p className="text-xs text-neutral-500">
-          .env で AI_PROVIDER（openai / gemini / anthropic）と対応する APIキーを設定してください。
+          1. noteのURLを入力 → 本文取得 → プロンプト自動生成。URLがない場合は下の欄に直接テキストを貼り付けられます。
+          .env で AI_PROVIDER と対応する APIキーを設定してください。
         </p>
         <div>
-          <label className="block text-sm text-neutral-600 mb-1">テキストを貼り付け</label>
+          <label className="block text-sm text-neutral-600 mb-1">1. noteのURLを入力（1行1URL）</label>
+          <p className="text-xs text-neutral-500 mb-1">
+            記事URLから本文を取得し、その内容からプロンプトを生成します。
+          </p>
+          <textarea
+            value={noteUrls}
+            onChange={(e) => setNoteUrls(e.target.value)}
+            placeholder="https://note.com/..."
+            className="w-full h-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm"
+          />
+          <button
+            type="button"
+            onClick={handleFetchNoteAndGenerate}
+            disabled={fetchingNote}
+            className="mt-2 px-4 py-2 bg-neutral-700 text-white rounded-lg text-sm hover:bg-neutral-600 disabled:opacity-50"
+          >
+            {fetchingNote ? "取得・生成中…" : "本文を取得してプロンプトを生成"}
+          </button>
+        </div>
+        <div>
+          <label className="block text-sm text-neutral-600 mb-1">
+            2. テキストを直接貼り付け（URLを使わない／編集して再生成）
+          </label>
+          <p className="text-xs text-neutral-500 mb-1">
+            URL取得を使わず、既にコピーした文章を貼り付けてプロンプトを生成する場合。
+          </p>
           <textarea
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
@@ -164,29 +190,12 @@ export function PersonaEditForm({ persona }: Props) {
           >
             {generatingPrompt ? "生成中…" : "プロンプトを生成"}
           </button>
-          {promptError && (
-            <p className="mt-2 text-sm text-red-600" role="alert">
-              {promptError}
-            </p>
-          )}
         </div>
-        <div>
-          <label className="block text-sm text-neutral-600 mb-1">noteのURL（1行に1つ）</label>
-          <textarea
-            value={noteUrls}
-            onChange={(e) => setNoteUrls(e.target.value)}
-            placeholder="https://note.com/..."
-            className="w-full h-20 px-3 py-2 border border-neutral-300 rounded-lg text-sm"
-          />
-          <button
-            type="button"
-            onClick={handleFetchNoteAndGenerate}
-            disabled={fetchingNote}
-            className="mt-2 px-4 py-2 bg-neutral-700 text-white rounded-lg text-sm hover:bg-neutral-600 disabled:opacity-50"
-          >
-            {fetchingNote ? "取得・生成中…" : "URLから取得してプロンプトを生成"}
-          </button>
-        </div>
+        {promptError && (
+          <p className="mt-2 text-sm text-red-600" role="alert">
+            {promptError}
+          </p>
+        )}
       </div>
 
       <div>
