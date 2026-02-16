@@ -53,7 +53,7 @@ export function PersonaEditForm({ persona }: Props) {
     }
   }
 
-  async function handleFetchNoteAndGenerate() {
+  async function handleFetchNote() {
     const urls = noteUrls
       .split(/\n/)
       .map((u) => u.trim())
@@ -81,27 +81,6 @@ export function PersonaEditForm({ persona }: Props) {
         return;
       }
       setPasteText(text);
-      const promptRes = await fetch("/api/ai/generate-prompt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      let promptData: { systemPrompt?: string; error?: string };
-      try {
-        promptData = await promptRes.json();
-      } catch {
-        setPromptError("プロンプト生成の応答を読み取れませんでした。APIキーを確認してください。");
-        return;
-      }
-      if (!promptRes.ok) {
-        setPromptError(promptData.error ?? "プロンプトの生成に失敗しました。");
-        return;
-      }
-      if (promptData.systemPrompt?.trim()) {
-        setSystemPrompt(promptData.systemPrompt.trim());
-      } else {
-        setPromptError("生成結果が空でした。APIキーを確認してください。");
-      }
     } catch {
       setPromptError("通信エラーです。APIキーを設定し、開発サーバーを再起動しましたか？");
     } finally {
@@ -146,13 +125,12 @@ export function PersonaEditForm({ persona }: Props) {
       <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50 space-y-3">
         <h2 className="font-medium text-neutral-800">noteのURL または 文章からプロンプトを生成</h2>
         <p className="text-xs text-neutral-500">
-          1. noteのURLを入力 → 本文取得 → プロンプト自動生成。URLがない場合は下の欄に直接テキストを貼り付けられます。
-          .env で AI_PROVIDER と対応する APIキーを設定してください。
+          1. noteのURLを入力 → 本文取得 → プロンプト自動生成。URLがない場合は下の欄に直接テキストを貼り付けられます。 .env で AI_PROVIDER と対応する APIキーを設定してください。
         </p>
         <div>
           <label className="block text-sm text-neutral-600 mb-1">1. noteのURLを入力（1行1URL）</label>
           <p className="text-xs text-neutral-500 mb-1">
-            記事URLから本文を取得し、その内容からプロンプトを生成します。
+            記事URLから本文を取得します。取得した本文は下の欄（2）に表示されます。
           </p>
           <textarea
             value={noteUrls}
@@ -162,19 +140,19 @@ export function PersonaEditForm({ persona }: Props) {
           />
           <button
             type="button"
-            onClick={handleFetchNoteAndGenerate}
+            onClick={handleFetchNote}
             disabled={fetchingNote}
             className="mt-2 px-4 py-2 bg-neutral-700 text-white rounded-lg text-sm hover:bg-neutral-600 disabled:opacity-50"
           >
-            {fetchingNote ? "取得・生成中…" : "本文を取得してプロンプトを生成"}
+            {fetchingNote ? "取得中…" : "本文を取得"}
           </button>
         </div>
         <div>
           <label className="block text-sm text-neutral-600 mb-1">
-            2. テキストを直接貼り付け（URLを使わない／編集して再生成）
+            2. 本文を確認してプロンプトを生成（または直接貼り付け）
           </label>
           <p className="text-xs text-neutral-500 mb-1">
-            URL取得を使わず、既にコピーした文章を貼り付けてプロンプトを生成する場合。
+            上でURLから取得した本文がここに表示されます。確認・編集してから「プロンプトを生成」を押してください。URLがない場合は、直接文章を貼り付けてプロンプトを生成できます。
           </p>
           <textarea
             value={pasteText}

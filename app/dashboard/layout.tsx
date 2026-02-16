@@ -47,7 +47,7 @@ export default async function DashboardLayout({
         </nav>
       </header>
       <DashboardNav personas={personas} />
-      <main className="flex-1 p-4 md:p-6 max-w-4xl mx-auto w-full">{children}</main>
+      <main className="flex-1 p-4 md:p-6 pb-20 max-w-4xl mx-auto w-full">{children}</main>
     </div>
   );
 }
