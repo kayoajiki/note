@@ -172,7 +172,7 @@ Vercel のプロジェクト設定 → **Environment Variables** で、次の変
 | **DATABASE_URL 未設定・誤り** | 本番用の Postgres 接続文字列を設定。Supabase の場合は **Transaction（ポート 6543）** の URL + `?sslmode=require&pgbouncer=true`。 |
 | **Supabase が Paused** | Supabase ダッシュボードで「Restore project」してから再度アクセス。 |
 | **マイグレーション未実行** | ローカルで `DATABASE_URL` を本番用に切り替え、`npx prisma migrate deploy` を実行してから再デプロイ。 |
-| **prepared statement "s1" already exists** | **DATABASE_URL** の末尾に **`&pgbouncer=true`** が付いているか確認。例: `...postgres?sslmode=require&pgbouncer=true`。付いていなければ追加して Redeploy。 |
+| **prepared statement "s1" already exists** / **s1 does not exist** | **DATABASE_URL** の末尾に **`&pgbouncer=true`** が付いているか確認。例: `...postgres?sslmode=require&pgbouncer=true`。付いていなければ追加して Redeploy。 |
 
 環境変数を変更したら **Redeploy**（Deployments → 最新の ⋮ → Redeploy）が必要です。
 

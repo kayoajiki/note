@@ -1,9 +1,12 @@
-const provider = process.env.AI_PROVIDER || "openai";
+const provider = (process.env.AI_PROVIDER || "openai").replace(/^["']|["']$/g, "").toLowerCase();
 
 async function getOpenAIClient() {
   const { OpenAI } = await import("openai");
   const key = process.env.OPENAI_API_KEY;
-  if (!key) throw new Error("OPENAI_API_KEY が設定されていません");
+  if (!key)
+    throw new Error(
+      "OPENAI_API_KEY が設定されていません。Gemini を使う場合は .env に AI_PROVIDER=gemini と GEMINI_API_KEY を設定してください。"
+    );
   return new OpenAI({ apiKey: key });
 }
 
